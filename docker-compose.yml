@@ -7,11 +7,11 @@ services:
       - postgres
     environment:
       VT_DATA_PATH: /data
-      VT_DB_CONNECTION_STRING: mongodb://mongo:27017
+      VT_DB_CONNECTION_STRING: mongodb://mongo:27017,mongo2:27017,mongo3:27017/virtool?replicaSet=rsmongo
       VT_DEV: "true"
       VT_POSTGRES_CONNECTION_STRING: postgresql+asyncpg://virtool:virtool@postgres/virtool
       VT_REDIS_CONNECTION_STRING: redis://redis:6379
-    image: virtool/virtool:6.7.1
+    image: virtool/virtool:7.2.2
     ports:
       - 9950:9950
     profiles:
@@ -24,32 +24,51 @@ services:
     command: run-from-redis --redis-url="redis://redis:6379" --jobs-api-url="http://jobs-api:9990" --dev-mode --is-analysis-workflow jobs_build_index
     entrypoint: workflow
     image: virtool/build-index:3.0.1
-
     restart: always
+    profiles:
+      - backend
+      - ui
   create-sample:
-    command: run-from-redis --redis-url="redis://redis:6379" --jobs-api-url="http://jobs-api:9990" --dev-mode --is-analysis-workflow jobs_create_sample
-    entrypoint: workflow
-    image: virtool/create-sample:2.1.2
+    command: --redis-connection-string="redis://redis:6379" --jobs-api-connection-string="http://jobs-api:9990" --redis-list-name jobs_create_sample
+    entrypoint: run-workflow
+    environment:
+      - VT_TIMEOUT=10
+    # image: virtool/create-sample:2.1.2
+    image: create-sample:test
     restart: always
+    profiles:
+      - backend
+      - ui
   create-subtraction:
     command: run-from-redis --redis-url="redis://redis:6379" --jobs-api-url="http://jobs-api:9990" --dev-mode --is-analysis-workflow jobs_create_subtraction
     entrypoint: workflow
     image: virtool/create-subtraction:3.0.1
     restart: always
+    profiles:
+      - backend
+      - ui
   nuvs:
     command: run-from-redis --redis-url="redis://redis:6379" --jobs-api-url="http://jobs-api:9990" --dev-mode --is-analysis-workflow jobs_nuvs
     entrypoint: workflow
     environment:
       VT_RUN_FROM_REDIS_PROC: "6"
       VT_RUN_FROM_REDIS_MEM: "12"
-    image: nuvs:test-1
-    # image: virtool/nuvs:3.0.0
+    image: virtool/nuvs:3.0.2
     restart: always
+    profiles:
+      - backend
+      - ui
   pathoscope:
     command: run-from-redis --redis-url="redis://redis:6379" --jobs-api-url="http://jobs-api:9990" --dev-mode --is-analysis-workflow jobs_pathoscope_bowtie
     entrypoint: workflow
+    environment:
+      VT_RUN_FROM_REDIS_MEM: 8
+      VT_RUN_FROM_REDIS_PROC: 8
     image: virtool/pathoscope:2.0.12
     restart: always
+    profiles:
+      - backend
+      - ui
   jobs-api:
     command: jobsAPI --host=0.0.0.0 --port=9990
     depends_on:
@@ -58,22 +77,29 @@ services:
       - postgres
     environment:
       VT_DATA_PATH: /data
-      VT_DB_CONNECTION_STRING: mongodb://mongo:27017
+      VT_DB_CONNECTION_STRING: mongodb://mongo:27017,mongo2:270/virtool?replicaSet=rsmongo
       VT_POSTGRES_CONNECTION_STRING: postgresql+asyncpg://virtool:virtool@postgres/virtool
       VT_REDIS_CONNECTION_STRING: redis://redis:6379
-    image: virtool/virtool:6.7.5
+    image: virtool/virtool:7.2.2
     ports:
       - 9990:9990
     volumes:
       - source: /home/igboyes/Projects/compose/data
         target: /data
         type: bind
+    profiles:
+      - backend
+      - ui
   migration:
     environment:
       SQLALCHEMY_URL: postgresql://virtool:virtool@postgres/virtool
     image: virtool/migration:1.0.4
+    profiles:
+      - backend
+      - ui
   mongo:
     image: mongo:4.4
+    entrypoint: ["/usr/bin/mongod", "--replSet", "rsmongo", "--bind_ip_all"]
     ports:
       - 27017:27017
     volumes:
@@ -85,7 +111,6 @@ services:
     image: postgres:13.1
     ports:
       - 5432:5432
-    restart: always
     volumes:
       - vt_postgres_data:/var/lib/postgresql/data
   redis:
@@ -94,13 +119,6 @@ services:
       - 6379:6379
     volumes:
       - vt_redis_data:/data
-  typesense:
-    image: typesense/typesense:0.22.1
-    environment:
-      TYPESENSE_API_KEY: virtool
-      TYPESENSE_DATA_DIR: /data
-    ports:
-      - 8108:8108
   ui:
     environment:
       VT_UI_API_URL: http://host.docker.internal:9950
@@ -109,7 +127,7 @@ services:
       VT_UI_USE_PROXY: "true"
     extra_hosts:
       - host.docker.internal:host-gateway
-    image: virtool/ui:2.12.0
+    image: virtool/ui:2.13.6
     ports:
       - 9900:9900
     profiles:
@@ -117,6 +135,8 @@ services:
 version: "3.1"
 volumes:
   vt_mongo_data: null
+  vt_mongo_2_data: null
+  vt_mongo_3_data: null
   vt_postgres_data: null
   vt_redis_data: null
   vt_typesense_data: null
