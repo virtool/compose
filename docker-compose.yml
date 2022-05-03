@@ -33,8 +33,7 @@ services:
     entrypoint: run-workflow
     environment:
       - VT_TIMEOUT=10
-    # image: virtool/create-sample:2.1.2
-    image: create-sample:test
+    image: virtool/create-sample:2.1.2
     restart: always
     profiles:
       - backend
