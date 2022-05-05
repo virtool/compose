@@ -31,7 +31,7 @@ services:
   create-sample:
     command: --redis-connection-string="redis://redis:6379" --jobs-api-connection-string="http://jobs-api:9990" --redis-list-name jobs_create_sample
     entrypoint: run-workflow
-    image: virtool:create-sample:2.1.2
+    image: virtool/create-sample:2.1.2
     restart: always
     profiles:
       - backend
