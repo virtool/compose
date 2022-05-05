@@ -31,9 +31,7 @@ services:
   create-sample:
     command: --redis-connection-string="redis://redis:6379" --jobs-api-connection-string="http://jobs-api:9990" --redis-list-name jobs_create_sample
     entrypoint: run-workflow
-    environment:
-      - VT_TIMEOUT=10
-    image: virtool/create-sample:2.1.2
+    image: virtool:create-sample:2.1.2
     restart: always
     profiles:
       - backend
@@ -76,7 +74,7 @@ services:
       - postgres
     environment:
       VT_DATA_PATH: /data
-      VT_DB_CONNECTION_STRING: mongodb://mongo:27017,mongo2:270/virtool?replicaSet=rsmongo
+      VT_DB_CONNECTION_STRING: mongodb://mongo:27017/virtool
       VT_POSTGRES_CONNECTION_STRING: postgresql+asyncpg://virtool:virtool@postgres/virtool
       VT_REDIS_CONNECTION_STRING: redis://redis:6379
     image: virtool/virtool:7.2.2
@@ -97,12 +95,13 @@ services:
       - backend
       - ui
   mongo:
-    image: mongo:4.4
-    entrypoint: ["/usr/bin/mongod", "--replSet", "rsmongo", "--bind_ip_all"]
+    image: bitnami/mongodb:4.4
+    environment:
+      MONGODB_REPLICATE_SET_MODE: primary
     ports:
-      - 27017:27017
+      - "27017:27017"
     volumes:
-      - vt_mongo_data:/data/db
+      - mongo_data:/data
   postgres:
     environment:
       POSTGRES_PASSWORD: virtool
@@ -111,13 +110,13 @@ services:
     ports:
       - 5432:5432
     volumes:
-      - vt_postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
   redis:
     image: redis:6.0
     ports:
       - 6379:6379
     volumes:
-      - vt_redis_data:/data
+      - redis_data:/data
   ui:
     environment:
       VT_UI_API_URL: http://host.docker.internal:9950
@@ -133,9 +132,6 @@ services:
       - backend
 version: "3.1"
 volumes:
-  vt_mongo_data: null
-  vt_mongo_2_data: null
-  vt_mongo_3_data: null
-  vt_postgres_data: null
-  vt_redis_data: null
-  vt_typesense_data: null
+  mongo_data: null
+  postgres_data: null
+  redis_data: null
