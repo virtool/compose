@@ -102,6 +102,10 @@ services:
       - "27017:27017"
     volumes:
       - mongo_data:/data
+    profiles:
+      - test
+      - backend
+      - ui
   postgres:
     environment:
       POSTGRES_PASSWORD: virtool
@@ -111,12 +115,20 @@ services:
       - 5432:5432
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    profiles:
+      - test
+      - backend
+      - ui
   redis:
     image: redis:6.0
     ports:
       - 6379:6379
     volumes:
       - redis_data:/data
+    profiles:
+      - test
+      - backend
+      - ui
   ui:
     environment:
       VT_UI_API_URL: http://host.docker.internal:9950
