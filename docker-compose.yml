@@ -98,7 +98,8 @@ services:
   mongo:
     image: bitnami/mongodb:4.4
     environment:
-      MONGODB_REPLICATE_SET_MODE: primary
+      ALLOW_EMPTY_PASSWORD: true
+      MONGODB_REPLICA_SET_MODE: primary
     ports:
       - "27017:27017"
     volumes:
