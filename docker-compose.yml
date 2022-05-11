@@ -7,7 +7,7 @@ services:
       - postgres
     environment:
       VT_DATA_PATH: /data
-      VT_DB_CONNECTION_STRING: mongodb://mongo:27017,mongo2:27017,mongo3:27017/virtool?replicaSet=rsmongo
+      VT_DB_CONNECTION_STRING: mongodb://mongo:27017/virtool
       VT_DEV: "true"
       VT_POSTGRES_CONNECTION_STRING: postgresql+asyncpg://virtool:virtool@postgres/virtool
       VT_REDIS_CONNECTION_STRING: redis://redis:6379
@@ -31,15 +31,16 @@ services:
   create-sample:
     command: --redis-connection-string="redis://redis:6379" --jobs-api-connection-string="http://jobs-api:9990" --redis-list-name jobs_create_sample
     entrypoint: run-workflow
-    image: virtool/create-sample:2.1.2
+    image: virtool/create-sample:3.0.1
     restart: always
     profiles:
       - backend
       - ui
   create-subtraction:
-    command: run-from-redis --redis-url="redis://redis:6379" --jobs-api-url="http://jobs-api:9990" --dev-mode --is-analysis-workflow jobs_create_subtraction
-    entrypoint: workflow
-    image: virtool/create-subtraction:3.0.1
+    command: --redis-connection-string="redis://redis:6379" --jobs-api-connection-string="http://jobs-api:9990" --redis-list-name jobs_create_subtraction
+    entrypoint: run-workflow
+    # image: virtool/create-subtraction:3.0.1
+    image: create-subtraction:test-2
     restart: always
     profiles:
       - backend
