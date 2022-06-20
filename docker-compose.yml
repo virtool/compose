@@ -1,3 +1,4 @@
+version: "3.1"
 services:
   api:
     command: server --host=0.0.0.0
@@ -11,7 +12,7 @@ services:
       VT_DEV: "true"
       VT_POSTGRES_CONNECTION_STRING: postgresql+asyncpg://virtool:virtool@postgres/virtool
       VT_REDIS_CONNECTION_STRING: redis://redis:6379
-    image: virtool/virtool:7.3.1
+    image: virtool/virtool:7.5.2
     ports:
       - 9950:9950
     profiles:
@@ -22,17 +23,27 @@ services:
         target: /data
         type: bind
   build-index:
-    command: run-from-redis --redis-url="redis://redis:6379" --jobs-api-url="http://jobs-api:9990" --dev-mode --is-analysis-workflow jobs_build_index
-    entrypoint: workflow
-    image: virtool/build-index:3.0.1
+    entrypoint: run-workflow
+    environment:
+      VT_JOBS_API_CONNECTION_STRING: "http://jobs-api:9990"
+      VT_REDIS_CONNECTION_STRING: "redis://redis:6379"
+      VT_REDIS_LIST_NAME: "jobs_build_index"
+      VT_MEM: 2
+      VT_PROC: 2
+    image: virtool/build-index:4.0.0
     restart: always
     profiles:
       - all
       - backend
       - ui
   create-sample:
-    command: --redis-connection-string="redis://redis:6379" --jobs-api-connection-string="http://jobs-api:9990" --redis-list-name jobs_create_sample
     entrypoint: run-workflow
+    environment:
+      VT_JOBS_API_CONNECTION_STRING: "http://jobs-api:9990"
+      VT_REDIS_CONNECTION_STRING: "redis://redis:6379"
+      VT_REDIS_LIST_NAME: "jobs_create_sample"
+      VT_MEM: 2
+      VT_PROC: 2
     image: virtool/create-sample:3.0.1
     restart: always
     profiles:
@@ -40,8 +51,13 @@ services:
       - backend
       - ui
   create-subtraction:
-    command: --redis-connection-string="redis://redis:6379" --jobs-api-connection-string="http://jobs-api:9990" --redis-list-name jobs_create_subtraction
     entrypoint: run-workflow
+    environment:
+      VT_JOBS_API_CONNECTION_STRING: "http://jobs-api:9990"
+      VT_REDIS_CONNECTION_STRING: "redis://redis:6379"
+      VT_REDIS_LIST_NAME: "jobs_create_subtraction"
+      VT_MEM: 2
+      VT_PROC: 2
     image: virtool/create-subtraction:4.0.1
     restart: always
     profiles:
@@ -49,24 +65,29 @@ services:
       - backend
       - ui
   nuvs:
-    command: run-from-redis --redis-url="redis://redis:6379" --jobs-api-url="http://jobs-api:9990" --dev-mode --is-analysis-workflow jobs_nuvs
-    entrypoint: workflow
+    entrypoint: run-workflow
     environment:
-      VT_RUN_FROM_REDIS_PROC: "6"
-      VT_RUN_FROM_REDIS_MEM: "12"
-    image: virtool/nuvs:3.0.2
+      VT_JOBS_API_CONNECTION_STRING: "http://jobs-api:9990"
+      VT_REDIS_CONNECTION_STRING: "redis://redis:6379"
+      VT_REDIS_LIST_NAME: "jobs_nuvs"
+      VT_MEM: 8
+      VT_PROC: 8
+    image: virtool/nuvs:4.0.0
     restart: always
     profiles:
       - all
       - backend
       - ui
   pathoscope:
-    command: run-from-redis --redis-url="redis://redis:6379" --jobs-api-url="http://jobs-api:9990" --dev-mode --is-analysis-workflow jobs_pathoscope_bowtie
-    entrypoint: workflow
+    entrypoint: run-workflow
     environment:
-      VT_RUN_FROM_REDIS_MEM: 8
-      VT_RUN_FROM_REDIS_PROC: 8
-    image: virtool/pathoscope:2.0.12
+      VT_JOBS_API_CONNECTION_STRING: "http://jobs-api:9990"
+      VT_REDIS_CONNECTION_STRING: "redis://redis:6379"
+      VT_REDIS_LIST_NAME: "jobs_pathoscope_bowtie"
+      VT_MEM: 8
+      VT_PROC: 8
+    # image: virtool/pathoscope:2.0.12
+    image: pathoscope:test-9
     restart: always
     profiles:
       - all
@@ -83,7 +104,7 @@ services:
       VT_DB_CONNECTION_STRING: mongodb://mongo:27017/virtool
       VT_POSTGRES_CONNECTION_STRING: postgresql+asyncpg://virtool:virtool@postgres/virtool
       VT_REDIS_CONNECTION_STRING: redis://redis:6379
-    image: virtool/virtool:7.3.1
+    image: virtool/virtool:7.5.2
     ports:
       - 9990:9990
     volumes:
@@ -96,21 +117,22 @@ services:
       - ui
   migration:
     environment:
-      SQLALCHEMY_URL: postgresql://virtool:virtool@postgres/virtool
+      SQLALCHEMY_URL: postgresql+asyncpg://virtool:virtool@postgres/virtool
     image: virtool/migration:1.0.4
     profiles:
       - all
       - backend
       - ui
   mongo:
-    image: bitnami/mongodb:4.4
+    image: bitnami/mongodb:4.4.10
     environment:
       ALLOW_EMPTY_PASSWORD: true
       MONGODB_REPLICA_SET_MODE: primary
+      MONGODB_ADVERTISED_HOSTNAME: mongo
     ports:
       - "27017:27017"
     volumes:
-      - mongo_data:/data
+      - mongo_data:/bitnami/mongodb
     profiles:
       - all
       - test
@@ -149,13 +171,12 @@ services:
       VT_UI_USE_PROXY: "true"
     extra_hosts:
       - host.docker.internal:host-gateway
-    image: virtool/ui:2.13.6
+    image: virtool/ui:2.17.8
     ports:
       - 9900:9900
     profiles:
       - all
       - backend
-version: "3.1"
 volumes:
   mongo_data: null
   postgres_data: null
