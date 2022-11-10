@@ -12,7 +12,7 @@ services:
       VT_DEV: "true"
       VT_POSTGRES_CONNECTION_STRING: postgresql+asyncpg://virtool:virtool@postgres/virtool
       VT_REDIS_CONNECTION_STRING: redis://redis:6379
-    image: virtool/virtool:7.5.2
+    image: ghcr.io/virtool/virtool:11.1.1
     ports:
       - 9950:9950
     profiles:
@@ -58,10 +58,10 @@ services:
       VT_REDIS_LIST_NAME: "jobs_create_subtraction"
       VT_MEM: 2
       VT_PROC: 2
-    image: virtool/create-subtraction:4.0.1
+    image: virtool/create-subtraction:4.0.2
     restart: always
     profiles:
-      - all     
+      - all
       - backend
       - ui
   nuvs:
@@ -86,8 +86,7 @@ services:
       VT_REDIS_LIST_NAME: "jobs_pathoscope_bowtie"
       VT_MEM: 8
       VT_PROC: 8
-    # image: virtool/pathoscope:2.0.12
-    image: pathoscope:test-9
+    image: virtool/pathoscope:4.0.2
     restart: always
     profiles:
       - all
@@ -104,7 +103,7 @@ services:
       VT_DB_CONNECTION_STRING: mongodb://mongo:27017/virtool
       VT_POSTGRES_CONNECTION_STRING: postgresql+asyncpg://virtool:virtool@postgres/virtool
       VT_REDIS_CONNECTION_STRING: redis://redis:6379
-    image: virtool/virtool:7.5.2
+    image: ghcr.io/virtool/virtool:10.7.1
     ports:
       - 9990:9990
     volumes:
@@ -118,7 +117,8 @@ services:
   migration:
     environment:
       SQLALCHEMY_URL: postgresql+asyncpg://virtool:virtool@postgres/virtool
-    image: virtool/migration:1.0.4
+      VT_MIGRATION_APPLY_MONGO_CONNECTION_STRING: mongodb://mongo:27017/virtool
+    image: virtool/migration:1.6.0
     profiles:
       - all
       - backend
@@ -130,7 +130,7 @@ services:
       MONGODB_REPLICA_SET_MODE: primary
       MONGODB_ADVERTISED_HOSTNAME: mongo
     ports:
-      - "27017:27017"
+      - 27017:27017
     volumes:
       - mongo_data:/bitnami/mongodb
     profiles:
@@ -172,7 +172,7 @@ services:
       VT_UI_USE_PROXY: "true"
     extra_hosts:
       - host.docker.internal:host-gateway
-    image: virtool/ui:2.17.8
+    image: virtool/ui:3.0.11
     ports:
       - 9900:9900
     profiles:
