@@ -143,6 +143,7 @@ services:
     environment:
       POSTGRES_PASSWORD: virtool
       POSTGRES_USER: virtool
+      POSTGRES_DB: virtool
     image: postgres:14.5
     ports:
       - 5432:5432
@@ -178,7 +179,53 @@ services:
     profiles:
       - all
       - backend
+  postgres-openfga:
+    image: postgres:14.5
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: openfga
+    profiles:
+      - all
+      - backend
+      - test
+      - ui
+    volumes:
+      - postgres_openfga_data:/var/lib/postgresql/data
+  migrate:
+    image: openfga/openfga:v0.2.5
+    depends_on:
+      - postgres-openfga
+    command: |
+      migrate
+    environment:
+      OPENFGA_DATASTORE_ENGINE: postgres
+      OPENFGA_DATASTORE_URI: postgres://postgres:password@postgres-openfga:5432/openfga
+    profiles:
+      - all
+      - backend
+      - test
+      - ui
+  openfga:
+    image: openfga/openfga:v0.2.5
+    environment:
+      OPENFGA_DATASTORE_ENGINE: postgres
+      OPENFGA_DATASTORE_URI: postgres://postgres:password@postgres-openfga:5432/openfga
+      OPENFGA_LOG_FORMAT: json
+    command: run
+    depends_on:
+      - postgres-openfga
+      - migrate
+    profiles:
+      - all
+      - backend
+      - test
+      - ui
+    ports:
+      - "8080:8080"
+      - "3000:3000"
 volumes:
   mongo_data: null
   postgres_data: null
+  postgres_openfga_data: null
   redis_data: null
