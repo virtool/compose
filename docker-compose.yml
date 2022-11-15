@@ -182,9 +182,9 @@ services:
   postgres-openfga:
     image: postgres:14.5
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=openfga
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: openfga
     profiles:
       - all
       - backend
@@ -199,8 +199,8 @@ services:
     command: |
       migrate
     environment:
-      - OPENFGA_DATASTORE_ENGINE=postgres
-      - OPENFGA_DATASTORE_URI=postgres://postgres:password@postgres-openfga:5432/openfga
+      OPENFGA_DATASTORE_ENGINE: postgres
+      OPENFGA_DATASTORE_URI: postgres://postgres:password@postgres-openfga:5432/openfga
     profiles:
       - all
       - backend
@@ -209,9 +209,9 @@ services:
   openfga:
     image: openfga/openfga:v0.2.5
     environment:
-      - OPENFGA_DATASTORE_ENGINE=postgres
-      - OPENFGA_DATASTORE_URI=postgres://postgres:password@postgres-openfga:5432/openfga
-      - OPENFGA_LOG_FORMAT=json
+      OPENFGA_DATASTORE_ENGINE: postgres
+      OPENFGA_DATASTORE_URI: postgres://postgres:password@postgres-openfga:5432/openfga
+      OPENFGA_LOG_FORMAT: json
     command: run
     depends_on:
       - postgres-openfga
