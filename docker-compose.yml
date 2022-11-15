@@ -178,6 +178,24 @@ services:
     profiles:
       - all
       - backend
+  openfga:
+    environment:
+      OPENFGA_LISTOBJECTSMAXRESULTS: 10000
+      OPENFGA_LISTOBJECTSDEADLINE: "10s"
+      OPENFGA_LOG_FORMAT: "json"
+    image: openfga/openfga:latest
+    container_name: openfga
+    command: run --datastore-engine postgres --datastore-uri 'postgres://virtool:virtool@postgres:5432/postgres?sslmode=disable'
+    networks:
+      - default
+    ports:
+      - "8080:8080"
+      - "3000:3000"
+    profiles:
+      - all
+      - test
+      - backend
+      - ui
 volumes:
   mongo_data: null
   postgres_data: null
