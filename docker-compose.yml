@@ -12,7 +12,7 @@ services:
       VT_DEV: "true"
       VT_POSTGRES_CONNECTION_STRING: postgresql+asyncpg://virtool:virtool@postgres/virtool
       VT_REDIS_CONNECTION_STRING: redis://redis:6379
-    image: ghcr.io/virtool/virtool:11.1.1
+    image: ghcr.io/virtool/virtool:12.0.1
     ports:
       - 9950:9950
     profiles:
