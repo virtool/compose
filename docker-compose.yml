@@ -126,9 +126,10 @@ services:
   mongo:
     image: bitnami/mongodb:4.4.10
     environment:
-      ALLOW_EMPTY_PASSWORD: true
       MONGODB_REPLICA_SET_MODE: primary
       MONGODB_ADVERTISED_HOSTNAME: mongo
+      MONGODB_REPLICA_SET_KEY: virtool
+      MONGODB_ROOT_PASSWORD: virtool
     ports:
       - 27017:27017
     volumes:
@@ -156,6 +157,7 @@ services:
       - ui
   redis:
     image: redis:6.0
+    command: redis-server --requirepass virtool
     ports:
       - 6379:6379
     volumes:
