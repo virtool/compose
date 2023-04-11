@@ -1,5 +1,7 @@
 # Compose for Virtool
 
+**You should now use [Tilt + Minikube](https://github.com/virtool/dev) for local development**. This repo is being archived.
+
 This repository provides a Docker Compose configuration for Virtool development.
 
 
